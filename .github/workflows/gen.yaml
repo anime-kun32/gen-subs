@@ -30,17 +30,22 @@ jobs:
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      # Step 5: Generate ASS subtitles with word highlighting
+      # Step 5: Pre-download large model (avoid interactive prompt)
+      - name: Download large model
+        run: gen-subs models add large
+
+      # Step 6: Generate ASS subtitles with word highlighting
       - name: Generate ASS subtitles with highlighting
         run: |
           mkdir -p subtitles
           gen-subs for ./video.mp4 \
-           --format ass \
-           --highlight "#FF69B4" \
-           --out-dir subtitles
+            --model large \
+            --format ass \
+            --highlight "${{ github.event.inputs.highlight_color }}" \
+            --out-dir subtitles
           mv subtitles/*.ass subtitles/video.ass
 
-      # Step 6: Upload .ass as artifact
+      # Step 7: Upload .ass as artifact
       - name: Upload ASS subtitle artifact
         uses: actions/upload-artifact@v4
         with:
