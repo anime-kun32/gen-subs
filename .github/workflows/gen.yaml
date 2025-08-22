@@ -1,6 +1,7 @@
 name: Generate ASS Subtitles
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
