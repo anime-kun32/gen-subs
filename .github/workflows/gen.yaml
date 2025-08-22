@@ -2,6 +2,11 @@ name: Generate ASS Subtitles
 
 on:
   workflow_dispatch:   # allows manual trigger
+    inputs:
+      highlight_color:
+        description: "ASS highlight color (hex with #)"
+        required: false
+        default: "#FF69B4"
 
 jobs:
   generate_subtitles:
@@ -11,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
+      # Step 2: Set up Node.js (Node 16 needed for ffi-napi compatibility)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -21,22 +26,21 @@ jobs:
       - name: Install gen-subs
         run: npm install -g gen-subs
 
-      # Step 4: Install ffmpeg
+      # Step 4: Install ffmpeg (gen-subs uses it to extract audio)
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      # Step 5: Generate .srt subtitles from video.mp4
-      - name: Generate SRT subtitles
+      # Step 5: Generate ASS subtitles with word highlighting
+      - name: Generate ASS subtitles with highlighting
         run: |
           mkdir -p subtitles
-          gen-subs video.mp4
-          mv subtitles.srt subtitles/video.srt
+          gen-subs for ./video.mp4 \
+            --format ass \
+            --highlight "${{ github.event.inputs.highlight_color }}" \
+            --out-dir subtitles
+          mv subtitles/*.ass subtitles/video.ass
 
-      # Step 6: Convert .srt to .ass
-      - name: Convert SRT to ASS
-        run: ffmpeg -i subtitles/video.srt subtitles/video.ass
-
-      # Step 7: Upload .ass as artifact
+      # Step 6: Upload .ass as artifact
       - name: Upload ASS subtitle artifact
         uses: actions/upload-artifact@v4
         with:
