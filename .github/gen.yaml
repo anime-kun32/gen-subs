@@ -1,0 +1,39 @@
+name: Generate ASS Subtitles
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - video.mp4
+
+jobs:
+  generate_subtitles:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # Step 3: Install gen-subs globally
+      - name: Install gen-subs
+        run: npm install -g gen-subs
+
+      # Step 4: Generate .ass subtitle from video.mp4
+      - name: Generate ASS subtitle
+        run: |
+          mkdir -p subtitles
+          gen-subs -f ass -o subtitles/video.ass video.mp4
+
+      # Step 5: Upload the generated .ass as an artifact
+      - name: Upload ASS subtitle artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: video-subtitles
+          path: subtitles/video.ass
