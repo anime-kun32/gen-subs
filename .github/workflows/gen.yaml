@@ -1,12 +1,7 @@
 name: Generate ASS Subtitles
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - video.mp4
+  workflow_dispatch:   # allows manual trigger
 
 jobs:
   generate_subtitles:
@@ -20,21 +15,30 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       # Step 3: Install gen-subs globally
       - name: Install gen-subs
         run: npm install -g gen-subs
 
-      # Step 4: Generate .ass subtitle from video.mp4
-      - name: Generate ASS subtitle
+      # Step 4: Install ffmpeg
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      # Step 5: Generate .srt subtitles from video.mp4
+      - name: Generate SRT subtitles
         run: |
           mkdir -p subtitles
-          gen-subs -f ass -o subtitles/video.ass video.mp4
+          gen-subs video.mp4
+          mv subtitles.srt subtitles/video.srt
 
-      # Step 5: Upload the generated .ass as an artifact
+      # Step 6: Convert .srt to .ass
+      - name: Convert SRT to ASS
+        run: ffmpeg -i subtitles/video.srt subtitles/video.ass
+
+      # Step 7: Upload .ass as artifact
       - name: Upload ASS subtitle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: video-subtitles
           path: subtitles/video.ass
