@@ -35,9 +35,9 @@ jobs:
         run: |
           mkdir -p subtitles
           gen-subs for ./video.mp4 \
-            --format ass \
-            --highlight "${{ github.event.inputs.highlight_color }}" \
-            --out-dir subtitles
+           --format ass \
+           --highlight "#FF69B4" \
+           --out-dir subtitles
           mv subtitles/*.ass subtitles/video.ass
 
       # Step 6: Upload .ass as artifact
